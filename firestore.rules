@@ -1,0 +1,80 @@
+// ============================================================
+// FIREBASE FIRESTORE SECURITY RULES
+// Copy-paste this into Firebase Console → Firestore → Rules
+// ============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isManager() {
+      return isLoggedIn() && getUserRole() == 'manager';
+    }
+
+    // ── Users collection ──────────────────────────────────
+    match /users/{userId} {
+      // Anyone logged in can read their own profile
+      allow read: if isLoggedIn() && (isOwner(userId) || isManager());
+
+      // New user can create their own profile
+      allow create: if isLoggedIn() && isOwner(userId);
+
+      // Only manager can update others; user can update own FCM token
+      allow update: if isLoggedIn() && (isOwner(userId) || isManager());
+
+      // Only manager can delete
+      allow delete: if isManager();
+    }
+
+    // ── Menu Items collection ──────────────────────────────
+    match /menuItems/{itemId} {
+      // Anyone logged in can read
+      allow read: if isLoggedIn();
+
+      // Only manager can write
+      allow write: if isManager();
+    }
+
+    // ── Orders collection ──────────────────────────────────
+    match /orders/{orderId} {
+      // Users can read their own orders; manager reads all
+      allow read: if isLoggedIn() && (
+        resource.data.userId == request.auth.uid || isManager()
+      );
+
+      // Any logged-in user can create an order
+      allow create: if isLoggedIn();
+
+      // User can cancel (update status to Cancelled) if it's theirs and status is Placed
+      // Manager can update any order status
+      allow update: if isLoggedIn() && (
+        isManager() ||
+        (
+          resource.data.userId == request.auth.uid &&
+          resource.data.status == 'Placed' &&
+          request.resource.data.status == 'Cancelled'
+        )
+      );
+
+      allow delete: if isManager();
+    }
+
+    // ── Daily Counters ─────────────────────────────────────
+    match /dailyCounters/{date} {
+      allow read, write: if isLoggedIn();
+    }
+  }
+}
