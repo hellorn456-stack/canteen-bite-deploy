@@ -93,14 +93,17 @@ export function AuthProvider({ children }) {
   };
 
   const registerStudent = async ({ email, password, name, branch, rollNumber, year }) => {
-    // Validate and normalize BEFORE creating auth — avoids orphan accounts
+    // Validate + normalize first (throws if number out of range)
     const normalizedRoll = normalizeRollNumber(rollNumber, branch, year);
+    // Create auth account so Firestore rules allow us to query
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    // Check for duplicate roll number (must be authenticated to query)
     const q = query(collection(db, 'users'), where('rollNumber', '==', normalizedRoll));
     const snap = await getDocs(q);
     if (!snap.empty) {
+      await cred.user.delete(); // clean up the orphan auth account
       throw new Error(`Roll number ${normalizedRoll} is already registered. Please contact the canteen manager.`);
     }
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
     const profileData = {
       name, email, role: 'student', branch,
       rollNumber: normalizedRoll, year,
