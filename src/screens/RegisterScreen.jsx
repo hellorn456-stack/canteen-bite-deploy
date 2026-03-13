@@ -100,7 +100,7 @@ export default function RegisterScreen() {
           {isGoogleFlow ? 'Complete Your Profile' : 'Create Account'}
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '13px', marginTop: '4px' }}>
-          Join CanteenBite – ICOE College
+          {`Join ${config.appName} – ${config.collegeName}`}
         </p>
       </div>
 

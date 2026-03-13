@@ -18,10 +18,10 @@ export default function CartScreen() {
   const [loading, setLoading] = useState(false);
 
   const calculateQueueTime = async () => {
+    // No orderBy — avoids composite index requirement. Order doesn't matter for summing.
     const q = query(
       collection(db, 'orders'),
-      where('status', 'in', ['Placed', 'Preparing']),
-      orderBy('createdAt', 'asc')
+      where('status', 'in', ['Placed', 'Preparing'])
     );
     const snap = await getDocs(q);
     let queueMinutes = 0;
@@ -109,6 +109,7 @@ export default function CartScreen() {
           items: items.map(i => ({
             itemId: i.itemId, name: i.name,
             qty: i.qty, price: i.price, prepTime: i.prepTime,
+            category: i.category || '',
           })),
           totalAmount, totalPrepTime,
           status: 'Placed',

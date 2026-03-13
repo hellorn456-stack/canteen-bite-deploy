@@ -1,3 +1,4 @@
+import config from '../../config';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../../components/BottomNav';
@@ -83,7 +84,7 @@ export default function ProfileScreen() {
         </button>
 
         <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--gray-400)' }}>
-          CanteenBite v1.0 · ICOE College
+          {config.appName} v1.0 · {config.collegeName}
         </p>
       </div>
 

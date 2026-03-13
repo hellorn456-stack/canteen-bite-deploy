@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import logoUrl from '../assets/logo.png';
+import config from '../config';
+// Logo import — wrapped in try/catch at runtime via onError fallback
+let logoUrl = null;
+try { logoUrl = new URL('../assets/logo.png', import.meta.url).href; } catch {}
 
 export default function LoginScreen() {
   const [email, setEmail]       = useState('');
@@ -70,20 +73,19 @@ export default function LoginScreen() {
           overflow: 'hidden',
           border: '2px solid rgba(255,255,255,0.3)',
         }}>
-          <img
-            src={logoUrl}
-            alt="ICOE Logo"
-            style={{ width: '60px', height: '60px', objectFit: 'contain' }}
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-          <span style={{ fontSize: '32px', display: 'none' }}>🍽️</span>
+          {logoUrl
+            ? <img src={logoUrl} alt={config.collegeName + ' Logo'}
+                style={{ width: '60px', height: '60px', objectFit: 'contain' }}
+                onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
+            : null}
+          <span style={{ fontSize: '32px', display: logoUrl ? 'none' : 'block' }}>🍽️</span>
         </div>
         <div style={{ textAlign: 'center' }}>
           <h1 style={{ color: 'white', fontSize: '28px', fontFamily: 'var(--font-heading)' }}>
             CanteenBite
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '13px', marginTop: '4px' }}>
-            ICOE College Smart Canteen
+            {config.collegeName} Smart Canteen
           </p>
         </div>
       </div>

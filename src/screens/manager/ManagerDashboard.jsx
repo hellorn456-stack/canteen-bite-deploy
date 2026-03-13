@@ -55,10 +55,10 @@ export default function ManagerDashboard() {
     let knownIds    = null;
     let isFirstLoad = true;
 
+    // No orderBy — avoids composite index requirement.
     const q = query(
       collection(db, 'orders'),
-      where('status', '==', 'Placed'),
-      orderBy('createdAt', 'desc')
+      where('status', '==', 'Placed')
     );
     const unsub = onSnapshot(q, (snap) => {
       const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));

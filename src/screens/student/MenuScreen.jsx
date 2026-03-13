@@ -75,7 +75,7 @@ export default function MenuScreen() {
       key={item.id}
       item={item}
       qty={getItemQty(item.id)}
-      onAdd={() => addItem({ itemId: item.id, name: item.name, price: item.price, prepTime: item.prepTime, imageUrl: item.imageUrl })}
+      onAdd={() => addItem({ itemId: item.id, name: item.name, price: item.price, prepTime: item.prepTime, imageUrl: item.imageUrl, category: item.category })}
       onRemove={() => removeItem(item.id)}
     />
   );
