@@ -69,6 +69,8 @@ export default function WalletScreen() {
             letterSpacing: '-1px',
             lineHeight: 1,
             position: 'relative', zIndex: 1,
+            color: '#FFFFFF',
+            textShadow: '0 2px 8px rgba(0,0,0,0.4)',
           }}>
             ₹{balance.toFixed(2)}
           </h1>
