@@ -3,8 +3,25 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import config from '../config';
 
-const BRANCHES = ['CSE', 'IT', 'Mechanical', 'Civil', 'Electrical', 'Electronics'];
+const BRANCHES = [
+  'Computer Science Engineering',
+  'Information Technology',
+  'Artificial Intelligence and Data Science',
+  'Civil Engineering',
+  'Electrical Engineering',
+  'Mechanical Engineering',
+];
 const YEARS = ['First Year', 'Second Year', 'Third Year', 'Fourth Year'];
+
+const YEAR_PREFIX   = { 'First Year': 'FE', 'Second Year': 'SE', 'Third Year': 'TE', 'Fourth Year': 'BE' };
+const BRANCH_PREFIX = {
+  'Computer Science Engineering':              'CSE',
+  'Information Technology':                    'IT',
+  'Artificial Intelligence and Data Science':  'AIDS',
+  'Civil Engineering':                         'CE',
+  'Electrical Engineering':                    'EE',
+  'Mechanical Engineering':                    'ME',
+};
 
 export default function RegisterScreen() {
   const [params]     = useSearchParams();
@@ -186,14 +203,42 @@ export default function RegisterScreen() {
               <>
                 <div className="input-group">
                   <label className="input-label">Roll Number *</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="e.g. CS2021001"
-                    value={rollNumber}
-                    onChange={e => setRollNumber(e.target.value.toUpperCase())}
-                    required
-                  />
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                    {/* Read-only prefix preview */}
+                    <div style={{
+                      padding: '13px 14px', border: '2px solid var(--gray-200)',
+                      borderRadius: 'var(--radius-md)', background: 'var(--gray-100)',
+                      fontSize: '15px', fontWeight: '800', color: 'var(--primary)',
+                      whiteSpace: 'nowrap', flexShrink: 0, lineHeight: 1.2, marginTop: '0px',
+                    }}>
+                      {(branch && year) ? `${YEAR_PREFIX[year]}-${BRANCH_PREFIX[branch]}` : '??-???'}
+                    </div>
+                    <input
+                      type="number"
+                      className="input-field"
+                      placeholder="001"
+                      min="1" max="999"
+                      value={rollNumber}
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        if (val === '' || (parseInt(val) >= 1 && parseInt(val) <= 999)) {
+                          setRollNumber(val);
+                        }
+                      }}
+                      required
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                  {branch && year && rollNumber && (
+                    <p style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: '700', marginTop: '4px' }}>
+                      Your roll number: {YEAR_PREFIX[year]}-{BRANCH_PREFIX[branch]}{String(parseInt(rollNumber)||0).padStart(3,'0')}
+                    </p>
+                  )}
+                  {rollNumber && (parseInt(rollNumber) < 1 || parseInt(rollNumber) > 999) && (
+                    <p style={{ fontSize: '12px', color: 'var(--danger)', fontWeight: '700', marginTop: '4px' }}>
+                      ⚠️ Enter a valid roll number (1–999).
+                    </p>
+                  )}
                 </div>
                 <div className="input-group">
                   <label className="input-label">Branch *</label>

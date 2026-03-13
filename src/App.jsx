@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProviderWrapper } from './contexts/CartContext';
@@ -20,6 +21,7 @@ import ManagerDashboard from './screens/manager/ManagerDashboard';
 
 // Permission modal
 import PermissionModal from './components/PermissionModal';
+import WelcomeBonusModal from './components/WelcomeBonusModal';
 
 // ─── Route Guards ──────────────────────────────────────────
 function PrivateRoute({ children, managerOnly = false }) {
@@ -72,11 +74,12 @@ function LoadingScreen() {
 // Using user.uid as the key means React fully resets the cart
 // when a different user logs in — no cart bleeding between accounts
 function CartWrapper({ children }) {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+  const [permissionHandled, setPermissionHandled] = useState(false);
   return (
     <CartProviderWrapper key={user?.uid ?? 'guest'} userId={user?.uid ?? null}>
-      {/* Show permission modal for ALL logged-in users including manager */}
-      {user && <PermissionModal />}
+      {user && <PermissionModal onDismissed={() => setPermissionHandled(true)} />}
+      {user && <WelcomeBonusModal permissionHandled={permissionHandled} />}
       {children}
     </CartProviderWrapper>
   );

@@ -15,12 +15,31 @@ import config from '../config';
 
 const AuthContext = createContext(null);
 
-const normalizeRollNumber = (rawRoll, branch) => {
-  const branchCode = branch.replace(/\s+/g, '').toUpperCase();
-  let numericPart = rawRoll.toUpperCase();
-  if (numericPart.startsWith(branchCode)) numericPart = numericPart.slice(branchCode.length);
-  numericPart = numericPart.replace(/\D/g, '');
-  return `${branchCode}${numericPart.padStart(3, '0')}`;
+// Year and branch code maps — must match RegisterScreen exactly
+const YEAR_PREFIX_MAP = {
+  'First Year':   'FE',
+  'Second Year':  'SE',
+  'Third Year':   'TE',
+  'Fourth Year':  'BE',
+};
+const BRANCH_CODE_MAP = {
+  'Computer Science Engineering':              'CSE',
+  'Information Technology':                    'IT',
+  'Artificial Intelligence and Data Science':  'AIDS',
+  'Civil Engineering':                         'CE',
+  'Electrical Engineering':                    'EE',
+  'Mechanical Engineering':                    'ME',
+};
+
+const normalizeRollNumber = (numericInput, branch, year) => {
+  const num = parseInt(String(numericInput).replace(/\D/g, ''), 10);
+  if (isNaN(num) || num < 1 || num > 999) {
+    throw new Error('Please enter a valid roll number (1–999).');
+  }
+  const yearCode   = YEAR_PREFIX_MAP[year];
+  const branchCode = BRANCH_CODE_MAP[branch];
+  if (!yearCode || !branchCode) throw new Error('Invalid branch or year selected.');
+  return `${yearCode}-${branchCode}${String(num).padStart(3, '0')}`;
 };
 
 const normalizeStaffId = (rawId) => {
@@ -74,14 +93,14 @@ export function AuthProvider({ children }) {
   };
 
   const registerStudent = async ({ email, password, name, branch, rollNumber, year }) => {
-    const normalizedRoll = normalizeRollNumber(rollNumber, branch);
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    // Validate and normalize BEFORE creating auth — avoids orphan accounts
+    const normalizedRoll = normalizeRollNumber(rollNumber, branch, year);
     const q = query(collection(db, 'users'), where('rollNumber', '==', normalizedRoll));
     const snap = await getDocs(q);
     if (!snap.empty) {
-      await cred.user.delete();
       throw new Error(`Roll number ${normalizedRoll} is already registered. Please contact the canteen manager.`);
     }
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
     const profileData = {
       name, email, role: 'student', branch,
       rollNumber: normalizedRoll, year,
@@ -95,7 +114,7 @@ export function AuthProvider({ children }) {
   };
 
   const completeStudentProfile = async (uid, { name, branch, rollNumber, year }) => {
-    const normalizedRoll = normalizeRollNumber(rollNumber, branch);
+    const normalizedRoll = normalizeRollNumber(rollNumber, branch, year);
     const q = query(collection(db, 'users'), where('rollNumber', '==', normalizedRoll));
     const snap = await getDocs(q);
     if (!snap.empty) {

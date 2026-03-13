@@ -1,31 +1,11 @@
-import { useState, useEffect } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import BottomNav from '../../components/BottomNav';
 import config from '../../config';
 
 export default function WalletScreen() {
-  const { profile, user } = useAuth();
+  const { profile } = useAuth();
   const balance = profile?.walletBalance ?? 0;
 
-  // Show welcome bonus modal if this is first time user opens app
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-
-  useEffect(() => {
-    if (profile && profile.welcomeBonusClaimed === false && config.welcomeBonus > 0) {
-      setShowWelcomeModal(true);
-    }
-  }, [profile]);
-
-  const dismissWelcomeModal = async () => {
-    setShowWelcomeModal(false);
-    if (user) {
-      try {
-        await updateDoc(doc(db, 'users', user.uid), { welcomeBonusClaimed: true });
-      } catch {}
-    }
-  };
 
   return (
     <div className="screen">
@@ -139,60 +119,7 @@ export default function WalletScreen() {
 
       <BottomNav />
 
-      {/* Welcome Bonus Modal */}
-      {showWelcomeModal && (
-        <div style={{
-          position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 9000, padding: '24px',
-          backdropFilter: 'blur(4px)',
-        }}>
-          <div className="card" style={{
-            padding: '32px 24px',
-            maxWidth: '360px',
-            width: '100%',
-            textAlign: 'center',
-            animation: 'fadeIn 0.4s cubic-bezier(0.34,1.56,0.64,1)',
-          }}>
-            {/* Confetti emoji header */}
-            <div style={{ fontSize: '56px', marginBottom: '12px' }}>🎉</div>
 
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '24px', color: 'var(--primary)', marginBottom: '8px' }}>
-              Welcome Bonus!
-            </h2>
-
-            <p style={{ fontSize: '14px', color: 'var(--gray-600)', marginBottom: '20px', lineHeight: 1.6 }}>
-              We've added a welcome bonus to your wallet to get you started!
-            </p>
-
-            {/* Bonus amount display */}
-            <div style={{
-              background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
-              borderRadius: 'var(--radius-xl)',
-              padding: '20px',
-              marginBottom: '24px',
-              color: 'white',
-            }}>
-              <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '4px' }}>Added to your wallet</p>
-              <p style={{ fontFamily: 'var(--font-heading)', fontSize: '42px', fontWeight: '800', letterSpacing: '-1px' }}>
-                ₹{config.welcomeBonus}
-              </p>
-            </div>
-
-            <p style={{ fontSize: '12px', color: 'var(--gray-400)', marginBottom: '20px' }}>
-              Use this to place your first order. Enjoy your meal! 🍽️
-            </p>
-
-            <button
-              className="btn btn-primary btn-full"
-              onClick={dismissWelcomeModal}
-            >
-              Let's Order! 🎊
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

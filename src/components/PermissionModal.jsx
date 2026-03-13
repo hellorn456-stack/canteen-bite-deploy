@@ -50,7 +50,7 @@ const BROWSER_INSTRUCTIONS = {
   },
 };
 
-export default function PermissionModal() {
+export default function PermissionModal({ onDismissed }) {
   const [step, setStep]       = useState('idle');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -69,9 +69,9 @@ export default function PermissionModal() {
     // Check if THIS specific user has already been asked
     const alreadyAsked = localStorage.getItem(STORAGE_KEY);
     if (alreadyAsked) {
-      // User was already asked before — just silently unlock audio
-      // so sound works for them without showing the modal again
       unlockAudio();
+      // No modal shown — immediately signal that permission step is done
+      onDismissed?.();
       return;
     }
 
@@ -100,7 +100,7 @@ export default function PermissionModal() {
       if (STORAGE_KEY) localStorage.setItem(STORAGE_KEY, '1');
 
       setStep(notifGranted ? 'done' : 'denied');
-      if (notifGranted) setTimeout(() => setStep('idle'), 2800);
+      if (notifGranted) setTimeout(() => { setStep('idle'); onDismissed?.(); }, 2800);
     } catch (e) {
       if (STORAGE_KEY) localStorage.setItem(STORAGE_KEY, '1');
       setStep('denied');
@@ -111,14 +111,15 @@ export default function PermissionModal() {
 
   const handleSkip = () => {
     if (STORAGE_KEY) localStorage.setItem(STORAGE_KEY, '1');
-    // Still unlock audio even if they skip notifications
     unlockAudio();
     setStep('idle');
+    onDismissed?.();
   };
 
   const handleDoneFromDenied = () => {
     if (STORAGE_KEY) localStorage.setItem(STORAGE_KEY, '1');
     setStep('idle');
+    onDismissed?.();
   };
 
   if (step === 'idle') return null;
