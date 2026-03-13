@@ -1000,147 +1000,38 @@ function ExportTab() {
 
       const headers = Object.keys(rows[0]);
 
-      // Build XLSX manually (minimal XML-based format that Excel/Sheets accepts)
-      const escXML = (v) => String(v)
+      // Use HTML table format — Excel opens this natively and correctly.
+      // No ZIP/binary required, no library needed, zero compatibility issues.
+      const esc = (v) => String(v)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;')
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-      const cellsFor = (rowData, rowIdx) =>
-        headers.map((h, ci) => {
-          const val = rowData[h];
-          const col = String.fromCharCode(65 + ci);
-          const ref = `${col}${rowIdx}`;
-          if (typeof val === 'number') {
-            return `<c r="${ref}" t="n"><v>${val}</v></c>`;
-          }
-          return `<c r="${ref}" t="inlineStr"><is><t>${escXML(val)}</t></is></c>`;
-        }).join('');
+      const headerCells = headers.map(h => `<th style="background:#E8590C;color:white;padding:6px 10px;border:1px solid #ccc;">${esc(h)}</th>`).join('');
+      const dataRows = rows.map((r, i) => {
+        const bg = i % 2 === 0 ? '#ffffff' : '#fff5f0';
+        const cells = headers.map(h => `<td style="padding:5px 10px;border:1px solid #eee;background:${bg};">${esc(r[h])}</td>`).join('');
+        return `<tr>${cells}</tr>`;
+      }).join('');
 
-      const headerRow = `<row r="1">${headers.map((h, ci) => {
-        const col = String.fromCharCode(65 + ci);
-        return `<c r="${col}1" t="inlineStr"><is><t>${escXML(h)}</t></is></c>`;
-      }).join('')}</row>`;
+      const html = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office"
+              xmlns:x="urn:schemas-microsoft-com:office:excel"
+              xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta charset="UTF-8">
+          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>
+            <x:ExcelWorksheet><x:Name>Orders</x:Name>
+            <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+            </x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+        </head>
+        <body>
+          <table border="1" cellspacing="0" cellpadding="0"
+                 style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;">
+            <thead><tr>${headerCells}</tr></thead>
+            <tbody>${dataRows}</tbody>
+          </table>
+        </body></html>`;
 
-      const dataRows = rows.map((r, i) =>
-        `<row r="${i + 2}">${cellsFor(r, i + 2)}</row>`
-      ).join('');
-
-      const wsXML = `<?xml version="1.0" encoding="UTF-8"?>
-<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-  <sheetData>${headerRow}${dataRows}</sheetData>
-</worksheet>`;
-
-      const wbXML = `<?xml version="1.0" encoding="UTF-8"?>
-<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-  <sheets><sheet name="Orders" sheetId="1" r:id="rId1"/></sheets>
-</workbook>`;
-
-      const relsXML = `<?xml version="1.0" encoding="UTF-8"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
-    Target="worksheets/sheet1.xml"/>
-</Relationships>`;
-
-      const pkgRels = `<?xml version="1.0" encoding="UTF-8"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
-    Target="xl/workbook.xml"/>
-</Relationships>`;
-
-      const contentTypes = `<?xml version="1.0" encoding="UTF-8"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-  <Default Extension="xml"  ContentType="application/xml"/>
-  <Override PartName="/xl/workbook.xml"
-    ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
-  <Override PartName="/xl/worksheets/sheet1.xml"
-    ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
-</Types>`;
-
-      // Pack into a ZIP-compatible structure using the Blob trick
-      // Each file is stored as a plain zip entry (stored, no compression)
-      const enc = new TextEncoder();
-      const files = {
-        '[Content_Types].xml':       enc.encode(contentTypes),
-        '_rels/.rels':               enc.encode(pkgRels),
-        'xl/workbook.xml':           enc.encode(wbXML),
-        'xl/_rels/workbook.xml.rels':enc.encode(relsXML),
-        'xl/worksheets/sheet1.xml':  enc.encode(wsXML),
-      };
-
-      const zipParts = [];
-      const centralDir = [];
-      let offset = 0;
-
-      const crc32 = (buf) => {
-        let crc = 0xFFFFFFFF;
-        const table = new Uint32Array(256);
-        for (let i = 0; i < 256; i++) {
-          let c = i;
-          for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-          table[i] = c;
-        }
-        for (let i = 0; i < buf.length; i++) crc = table[(crc ^ buf[i]) & 0xFF] ^ (crc >>> 8);
-        return (crc ^ 0xFFFFFFFF) >>> 0;
-      };
-
-      const u16 = (n) => { const b = new Uint8Array(2); new DataView(b.buffer).setUint16(0, n, true); return b; };
-      const u32 = (n) => { const b = new Uint8Array(4); new DataView(b.buffer).setUint32(0, n, true); return b; };
-
-      for (const [name, data] of Object.entries(files)) {
-        const nameBytes = enc.encode(name);
-        const crc       = crc32(data);
-        const localHdr  = new Uint8Array([
-          0x50, 0x4B, 0x03, 0x04,   // local file header sig
-          20, 0,                     // version needed
-          0, 0,                      // flags
-          0, 0,                      // compression (stored)
-          0, 0, 0, 0,                // mod time/date
-          ...u32(crc),
-          ...u32(data.length),
-          ...u32(data.length),
-          ...u16(nameBytes.length),
-          0, 0,                      // extra field len
-        ]);
-        zipParts.push(localHdr, nameBytes, data);
-
-        const cdEntry = new Uint8Array([
-          0x50, 0x4B, 0x01, 0x02,
-          20, 0, 20, 0,
-          0, 0, 0, 0, 0, 0,
-          ...u32(crc),
-          ...u32(data.length),
-          ...u32(data.length),
-          ...u16(nameBytes.length),
-          0, 0, 0, 0, 0, 0,
-          0, 0, 0, 0,
-          ...u32(offset),
-        ]);
-        centralDir.push({ hdr: new Uint8Array([...cdEntry, ...nameBytes]) });
-        offset += localHdr.length + nameBytes.length + data.length;
-      }
-
-      const cdOffset = offset;
-      const cdEntries = centralDir.map(e => e.hdr);
-      const cdSize    = cdEntries.reduce((s, e) => s + e.length, 0);
-      const eocd      = new Uint8Array([
-        0x50, 0x4B, 0x05, 0x06,
-        0, 0, 0, 0,
-        ...u16(centralDir.length),
-        ...u16(centralDir.length),
-        ...u32(cdSize),
-        ...u32(cdOffset),
-        0, 0,
-      ]);
-
-      const allParts = [...zipParts, ...cdEntries, eocd];
-      const totalLen = allParts.reduce((s, p) => s + p.length, 0);
-      const out      = new Uint8Array(totalLen);
-      let pos = 0;
-      for (const p of allParts) { out.set(p, pos); pos += p.length; }
-
-      const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
       a.href = url; a.download = `canteenbite_${startDate}_${endDate}.xlsx`;
