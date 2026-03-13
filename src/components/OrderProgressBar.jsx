@@ -1,7 +1,7 @@
 const STAGES = ['Placed', 'Preparing', 'Ready', 'Completed'];
 
 export default function OrderProgressBar({ status }) {
-  const currentIdx = STAGES.indexOf(status);
+  const currentIdx  = STAGES.indexOf(status);
   const isCancelled = status === 'Cancelled';
 
   if (isCancelled) {
@@ -12,10 +12,22 @@ export default function OrderProgressBar({ status }) {
     );
   }
 
+  // Progress fraction strictly between first and last dot centres
+  // 0 dots done = 0%, 1 = 33%, 2 = 66%, 3 = 100%
+  const progressPct = currentIdx <= 0 ? 0
+    : currentIdx === 1 ? 33
+    : currentIdx === 2 ? 66
+    : 100;
+
   return (
     <div style={{ padding: '4px 0' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
-        {/* Connecting line */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        position: 'relative',
+      }}>
+        {/* Background track — starts and ends at dot centres (14px from each edge) */}
         <div style={{
           position: 'absolute',
           top: '14px',
@@ -25,17 +37,17 @@ export default function OrderProgressBar({ status }) {
           background: 'var(--gray-200)',
           borderRadius: '2px',
         }} />
+
+        {/* Filled track — never exceeds the dot centres */}
         <div style={{
           position: 'absolute',
           top: '14px',
           left: '14px',
           height: '3px',
+          // calc: of the space between first and last dot (100% - 28px), take progressPct of it
+          width: `calc((100% - 28px) * ${progressPct} / 100)`,
           background: 'var(--primary)',
           borderRadius: '2px',
-          width: currentIdx === 0 ? '0%'
-                : currentIdx === 1 ? '33%'
-                : currentIdx === 2 ? '66%'
-                : '100%',
           transition: 'width 0.5s ease',
         }} />
 
@@ -52,16 +64,13 @@ export default function OrderProgressBar({ status }) {
               zIndex: 1,
               flex: 1,
             }}>
-              {/* Circle */}
+              {/* Dot */}
               <div style={{
-                width: '28px',
-                height: '28px',
+                width: '28px', height: '28px',
                 borderRadius: '50%',
                 background: done || current ? 'var(--primary)' : 'var(--white)',
                 border: `3px solid ${done || current ? 'var(--primary)' : 'var(--gray-300)'}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.3s ease',
                 boxShadow: current ? 'var(--shadow-primary)' : 'none',
               }}>
@@ -77,6 +86,7 @@ export default function OrderProgressBar({ status }) {
                   }} />
                 ) : null}
               </div>
+
               {/* Label */}
               <span style={{
                 fontSize: '10px',
@@ -92,10 +102,11 @@ export default function OrderProgressBar({ status }) {
           );
         })}
       </div>
+
       <style>{`
         @keyframes pulse {
           0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(0.7); opacity: 0.7; }
+          50%       { transform: scale(0.7); opacity: 0.7; }
         }
       `}</style>
     </div>

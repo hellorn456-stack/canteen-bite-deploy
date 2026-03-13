@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import config from '../config';
 
 const BRANCHES = ['CSE', 'IT', 'Mechanical', 'Civil', 'Electrical', 'Electronics'];
 const YEARS = ['First Year', 'Second Year', 'Third Year', 'Fourth Year'];
@@ -52,6 +53,14 @@ export default function RegisterScreen() {
     setError('');
     setLoading(true);
     try {
+      // Email suffix check — only for normal (non-Google) registration
+      if (!isGoogleFlow && config.emailSuffix) {
+        const suffix = config.emailSuffix.toLowerCase();
+        if (!email.toLowerCase().endsWith('@' + suffix)) {
+          throw new Error('Only ' + config.collegeName + ' email addresses are allowed (e.g. yourname@' + suffix + ').');
+        }
+      }
+
       if (role === 'student') {
         if (!branch || !year) throw new Error('Please fill in all required fields.');
         if (isGoogleFlow && user) {
@@ -146,11 +155,16 @@ export default function RegisterScreen() {
                   <input
                     type="email"
                     className="input-field"
-                    placeholder="your@email.com"
+                    placeholder={config.emailSuffix ? 'yourname@' + config.emailSuffix : 'your@email.com'}
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
                   />
+                  {config.emailSuffix && (
+                    <p style={{ fontSize: '11px', color: 'var(--gray-400)', marginTop: '3px' }}>
+                      Only @{config.emailSuffix} addresses are accepted
+                    </p>
+                  )}
                 </div>
                 <div className="input-group">
                   <label className="input-label">Password *</label>
