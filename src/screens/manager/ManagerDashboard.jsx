@@ -193,22 +193,29 @@ function OrdersTab() {
   const [loading, setLoading]     = useState(true);
 
   useEffect(() => {
+    // No orderBy in Firestore queries to avoid needing composite indexes.
+    // Sorting is done client-side after fetch.
     let q;
     if (subTab === 'active') {
       q = query(
         collection(db, 'orders'),
-        where('status', 'in', ['Placed', 'Preparing', 'Ready']),
-        orderBy('createdAt', 'asc')
+        where('status', 'in', ['Placed', 'Preparing', 'Ready'])
       );
     } else {
       q = query(
         collection(db, 'orders'),
-        where('status', 'in', ['Completed', 'Cancelled']),
-        orderBy('createdAt', 'desc')
+        where('status', 'in', ['Completed', 'Cancelled'])
       );
     }
     const unsub = onSnapshot(q, snap => {
-      setOrders(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const raw = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Sort client-side: active = oldest first, history = newest first
+      if (subTab === 'active') {
+        raw.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+      } else {
+        raw.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      }
+      setOrders(raw);
       setLoading(false);
     });
     return unsub;
