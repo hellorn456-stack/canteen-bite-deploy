@@ -177,18 +177,18 @@ For React Native, use **Expo**: https://expo.dev
 
 ## ❓ FAQ
 
-**Q: How do I add menu item images?**
+**Q: How do I add menu item images?** <br>
 A: In the Manager Dashboard → Menu, enter an image URL. You can:
 - Upload to Firebase Storage and paste the download URL
 - Use any publicly accessible image URL
 
-**Q: Why does Google Sign-In not work on localhost?**
+**Q: Why does Google Sign-In not work on localhost?** <br>
 A: Add `localhost` to authorized domains in Firebase Console → Authentication → Settings → Authorized domains
 
-**Q: How do push notifications work?**
+**Q: How do push notifications work?** <br>
 A: Firebase Cloud Messaging (FCM) is set up in `firebase.js`. For notifications to work, you need to set up a service worker. This is an advanced step — see Firebase docs for FCM Web setup.
 
-**Q: How to add a new manager?**
+**Q: How to add a new manager?** <br>
 A: Register normally, then manually change `role` to `"manager"` in Firestore Console.
 
 ---
@@ -205,4 +205,4 @@ A: Register normally, then manually change `role` to `"manager"` in Firestore Co
 
 ---
 
-Built with ❤️ for ICOE College Canteen
+Built with ❤️ for College Canteen
