@@ -1,5 +1,5 @@
-# 🍽️ CanteenBite – Smart Canteen Ordering System
-**ICOE College · Built with React + Firebase**
+# 🍽️ CanteenBite – Smart Canteen Ordering
+**Built with React + Firebase**
 
 ---
 
