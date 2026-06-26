@@ -1,5 +1,64 @@
-# 🍽️ CanteenBite – Smart Canteen Ordering
-**Built with React + Firebase**
+# 🍽️ CanteenBite
+
+> A full-stack canteen platform that streamlines food ordering through online ordering, digital wallet payments, real-time order tracking, and analytics.
+
+Developed as part of my **B.E. Computer Engineering Semester 6 Mini Project** using **React.js, Firebase, JavaScript, HTML, and CSS**.
+
+---
+
+## 🛠️ Tech Stack
+
+| Category           | Technologies                                                                                                                                                                                                                                                                                                                                                                                                            |
+| :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend**       | ![React](https://img.shields.io/badge/React-61DAFB?style=flat-square\&logo=react\&logoColor=black) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square\&logo=javascript\&logoColor=black) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square\&logo=html5\&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square\&logo=css3\&logoColor=white) |
+| **Backend** | ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square\&logo=firebase\&logoColor=black)                                                                                                                                                                                                                                                                                                             |
+| **Database**       | ![Cloud Firestore](https://img.shields.io/badge/Cloud%20Firestore-FFCA28?style=flat-square\&logo=firebase\&logoColor=black)                                                                                                                                                                                                                                                                                             |
+| **Authentication** | ![Firebase Authentication](https://img.shields.io/badge/Firebase%20Authentication-FFCA28?style=flat-square\&logo=firebase\&logoColor=black)                                                                                                                                                                                                                                                                             |
+| **Deployment**     | ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square\&logo=vercel\&logoColor=white)                                                                                                                                                                                                                                                                                                                   |
+
+---
+
+## 💡 Problem Statement
+
+College canteens often experience long queues during break hours, leading to increased waiting times for students and additional workload for canteen staff. Traditional manual ordering also makes it difficult to manage orders efficiently, monitor sales, and maintain an organized workflow.
+
+**CanteenBite** addresses these challenges by digitizing the entire ordering process, enabling students to place orders online, make wallet-based payments, and track their orders in real time while providing managers with powerful tools to manage menus, users, and analytics.
+
+---
+
+## 🔧 Features
+
+### 👨‍🎓 Student & Staff Portal
+
+* Secure Email/Password and Google Sign-in
+* Browse menu by category with real-time availability
+* Add items to cart and adjust quantities
+* Digital wallet for seamless cashless payments
+* Order status tracking (Placed → Preparing → Ready → Completed)
+* Queue-based estimated ready time
+* Cancel eligible orders (only when "Placed") with automatic wallet refunds
+* View order history and wallet balance
+
+### 👨‍💼 Manager Dashboard
+
+* View all active + past orders
+* Manage menu items (Add, Edit, Delete)
+* Mark items as Available or Out of Stock (real-time, no page refresh needed)
+* Update live order status (Placed → Preparing → Ready → Completed)
+* Recharge user wallet balances
+* Search and manage registered users
+* Revenue and order analytics dashboard
+* Export order reports as CSV for any date range
+
+---
+
+## 🚀 Live Demo
+
+🌐 **Live Application**  
+https://canteen-bite-deploy.vercel.app/
+
+📂 **GitHub Repository**  
+https://github.com/aryanmitkar/canteen-bite-deploy
 
 ---
 
@@ -137,44 +196,6 @@ Then deploy the `dist/` folder to:
 
 ---
 
-## 📱 CONVERTING TO REACT NATIVE (Future)
-
-This project is structured to make React Native migration easier:
-- All business logic is in `contexts/` (reusable)
-- Firebase calls are the same in React Native
-- UI components can be rewritten with React Native equivalents
-
-For React Native, use **Expo**: https://expo.dev
-
----
-
-## 🔧 FEATURES IMPLEMENTED
-
-### Students & Staff
-- ✅ Email/Password registration & login
-- ✅ Google Sign-In
-- ✅ Roll number / Staff ID duplicate check
-- ✅ Browse menu by category with real-time updates
-- ✅ Add to cart, adjust quantities
-- ✅ Order placement with wallet deduction
-- ✅ Queue-based estimated ready time
-- ✅ Order status tracking (Placed → Preparing → Ready → Completed)
-- ✅ Cancel orders (only when "Placed") with auto-refund
-- ✅ Order history (read-only)
-- ✅ Wallet balance view
-- ✅ Bottom navigation
-
-### Manager
-- ✅ View all active + past orders
-- ✅ Advance order status (Placed → Preparing → Ready → Completed)
-- ✅ Add/Edit/Delete menu items
-- ✅ Mark items Out of Stock / Available (real-time)
-- ✅ Recharge user wallets (search by name/ID)
-- ✅ Today's analytics dashboard
-- ✅ Export orders as CSV by date range
-
----
-
 ## ❓ FAQ
 
 **Q: How do I add menu item images?** <br>
@@ -205,4 +226,6 @@ A: Register normally, then manually change `role` to `"manager"` in Firestore Co
 
 ---
 
-Built with ❤️ for College Canteen
+<p align="center">
+🍽️ Developed with ❤️ to make canteens smarter, faster, and more efficient.
+</p>
